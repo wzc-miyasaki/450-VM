@@ -8,7 +8,7 @@
 #include "global.hpp"
 #include "backend.hpp"
 #include "courseinfo.hpp"
-#include "courseQuery.hpp"
+#include "coursequery.hpp"
 
 void Response(int _fd, const char* queryResult)
 {

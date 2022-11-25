@@ -28,6 +28,7 @@ const unsigned short int TCP_PORT_MAIN  = 25344;
 #include <arpa/inet.h> 
 #include <sys/wait.h>
 
+// credential authentication status enumerator.  
 enum AuthFlag {
     USER_NOTFOUND = 0,
     WRONG_PASS = 1,
@@ -36,9 +37,7 @@ enum AuthFlag {
 
 
 int readData(int fd, char *buf, int bufSize, size_t readNum);
-void* addrParse(sockaddr* addr);    // convert addr to IPv4 or IPv6
-
-int createUDPServerSocket(const char* port);    // use getaddrinfo to create UDP Server socket
+int createUDPServerSocket(const char* port);    
 int CreateUDPClientSocket(const char* ip, const char *port);
 int getAddrinfoAtUDPPort(const char* port, addrinfo* res);
 void AnalyzeQuery(const char *q, char *id, char *key);

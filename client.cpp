@@ -4,6 +4,7 @@
  */
 
 #include <iostream>
+#include <vector>
 #include "global.hpp"
 
 #define ATTEMPT_MAX 3
@@ -36,8 +37,12 @@ void LoginRequest(char* res)
     *buf = '\0';
 }
 
-void CourseQuery(char *res)
+// if it's single query, return 1;
+// if it's multiple course query,  return 2;
+int CourseQuery(char *res)
 {
+    int queryStatus = 1;
+    bool isMultiple = false;
     char *buf = res;
     char c;
     printf("Please enter the course code to query:");
@@ -45,20 +50,30 @@ void CourseQuery(char *res)
     {
         c = fgetc(stdin);
         if(c == '\n')   break;
+        if(c == ' ') {
+            isMultiple = true;
+            queryStatus= 2;
+        }
         *buf = c;
         ++buf;
     }
-    *buf = ',';
-    ++buf;
-    printf("Please enter the category (Credit / Professor / Days / CourseName):");
-    while(true)
+
+    if(!isMultiple) 
     {
-        c = fgetc(stdin);
-        if(c == '\n')   break;
-        *buf = c;
+        *buf = ',';
         ++buf;
+        printf("Please enter the category (Credit / Professor / Days / CourseName):");
+        while(true)
+        {
+            c = fgetc(stdin);
+            if(c == '\n')   break;
+            *buf = c;
+            ++buf;
+        }
+        *buf = '\0';
     }
-    *buf = '\0';
+
+    return queryStatus;
 }
 
 void GetClientPort(int skfd, int *_dst)
@@ -90,6 +105,39 @@ void extractUsername(const char *_src, char *_dst, size_t dstSz)
 
 }
 
+void DisplayMultRes(std::vector<std::string>& courseList, const char* res, const std::string& symbol)
+{
+    printf("CourseCode: Credits, Professor, Days, Course Name\n");
+    std::string src(res);
+    auto head = 0;
+    auto tail = src.find(symbol, 0);
+    int courseIdx = 0;
+    while(tail != std::string::npos)
+    { 
+        std::cout << courseList[courseIdx] << ": "
+                << src.substr(head, tail-head) << "\n";
+        head = tail + symbol.length();
+        tail = src.find(symbol, head);
+        ++courseIdx;
+    }
+}
+
+void ExtractMultipleCode(const char* lists, std::vector<std::string>& _dst)
+{
+    std::string src(lists);
+    std::string tmp = "";
+    src.push_back(' '); 
+    for(char c : src){
+        if(c == ' '){
+            if(!tmp.empty()){
+                _dst.push_back(tmp);
+                tmp.clear();
+            }  
+        }else{
+            tmp.push_back(c);
+        }
+    }
+}
 
 int main()
 {
@@ -132,11 +180,11 @@ int main()
         while(needAuth && FailedAttempts > 0){
             LoginRequest(sendBuf);
             
-            // send to server
+            // send authentication to server
             send(skfd, sendBuf, strlen(sendBuf)+1, 0);
             extractUsername(sendBuf, user, sizeof(user)); 
 
-            // read from server
+            // read authentication result from server
             readData(skfd, readBuf, BUFSIZE_DEFAULT-1, BUFSIZE_DEFAULT);
             
             if(strcmp(readBuf, "2")==0)
@@ -159,26 +207,45 @@ int main()
         
         if(FailedAttempts == 0)
         {
-            printf("Authentication Failed for 3 attempts. Client will shut down.");
+            printf("Authentication Failed for 3 attempts. Client will shut down.\n");
             break;
         }
 
         // course info query
+        int q_type;
         memset(sendBuf, 0, BUFSIZE_DEFAULT);
         memset(c_code, 0, sizeof(c_code));
         memset(c_type, 0, sizeof(c_type));
-        CourseQuery(sendBuf);
+        q_type = CourseQuery(sendBuf);
         AnalyzeQuery(sendBuf, c_code, c_type);
-        
         send(skfd, sendBuf, strlen(sendBuf)+1, 0);
-        printf("%s sent a request to the main server.\n", user);
+        printf("\n");
 
+
+        switch(q_type)
+        {
+            case 1: printf("%s sent a request to the main server.\n", user); break;
+            case 2: printf("%s sent a request with multiple CourseCode to the main server.\n", user); break;
+            default: printf("\n"); break;
+        }
+
+
+        // display query result
         readData(skfd, readBuf, BUFSIZE_DEFAULT-1, BUFSIZE_DEFAULT);
         printf("The client received the response from the Main server using TCP over port %d.\n", clientPort);
         if(strlen(readBuf) == 0)  
             printf("Didn’t find the course: %s.\n", c_code);
         else    
-            printf("The %s of %s is %s.\n", c_type, c_code, readBuf);
+        {
+            if(q_type == 1)
+                printf("The %s of %s is %s.\n", c_type, c_code, readBuf);
+            if(q_type == 2)
+            {
+                std::vector<string> courseList;
+                ExtractMultipleCode(c_code, courseList);
+                DisplayMultRes(courseList, readBuf, "#");
+            }
+        }
         printf("\n\n-----Start a new request-----\n");
     }                                                              
 

@@ -1,6 +1,7 @@
 #include "global.hpp"
 
-
+// reads data from the socket "fd" , and save content to a buffer "buf".
+// it reads "readNum" bytes of data.  
 int readData(int fd, char *buf, int bufSize, size_t readNum)
 {
     int readSz;
@@ -11,14 +12,8 @@ int readData(int fd, char *buf, int bufSize, size_t readNum)
 }
 
 
-void* addrParse(sockaddr* addr)
-{
-    if(addr->sa_family == AF_INET)
-        return &((sockaddr_in*) addr)->sin_addr;
-    return &((sockaddr_in6*) addr)->sin6_addr;
-}
-
-
+// Based on Beej's Book:  Chapter 6 (6.3 Datagram sockets)
+// create UDP server socket with help of getaddrinfo. 
 int createUDPServerSocket(const char* port)
 {
     int status, sockfd;
@@ -62,6 +57,9 @@ int createUDPServerSocket(const char* port)
     return sockfd;
 }
 
+
+// Based on Beej's Book:  Chapter 6 (6.3 Datagram sockets)
+// create UDP client socket with help of getaddrinfo. 
 int CreateUDPClientSocket(const char* ip, const char *port)
 {
     addrinfo hint, *servList;
@@ -83,6 +81,7 @@ int CreateUDPClientSocket(const char* ip, const char *port)
     
     return fd;
 }
+
 
 int getAddrinfoAtUDPPort(const char* port, addrinfo* res)
 {
@@ -109,6 +108,7 @@ int getAddrinfoAtUDPPort(const char* port, addrinfo* res)
 }
 
 
+// Analyze a course Query, which has only 2 parts: course id "id" and information category "key"
 void 
 AnalyzeQuery(const char *q, char *id, char *key)
 {

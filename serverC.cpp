@@ -33,6 +33,10 @@ void getUserAndPass(const char *info, char *_u, char *_p)
     }
 }
 
+
+// username does not exist, return 0
+// valid username but wrong password, return 1
+// correct username and password, return 2
 int verifyCred(char *info)
 {
     int status = 0;
@@ -56,10 +60,13 @@ int verifyCred(char *info)
 
         if(strcmp(user, verifiedUser)==0)
             ++status;
-        if(strcmp(pass, verifiedpass)==0)
-            ++status;
+
         if(status > 0)
+        {
+            if(strcmp(pass, verifiedpass)==0)
+                ++status;
             break;
+        }
     }
 
     fclose(txt);

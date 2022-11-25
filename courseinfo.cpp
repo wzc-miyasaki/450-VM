@@ -29,6 +29,8 @@ CourseInfo:: getField(CourseField field, char *_dst)
     }
     if(ptr != NULL)
         memcpy(_dst, ptr, strlen(ptr));
+    else if(field == ALL)
+        CopyFullInfo(_dst);
 }
 
 
@@ -72,4 +74,17 @@ CourseInfo:: ClearField()
     memset(code, 0, sizeof(code));
     memset(credit, 0, sizeof(credit));
     memset(day, 0, sizeof(day));
+}
+
+void 
+CourseInfo:: CopyFullInfo(char* _dst)
+{
+    std::string str_cred(credit);
+    std::string str_prof(prof);
+    std::string str_name(name);
+    std::string str_day(day);
+
+    std::string info = str_cred + "," + str_prof + "," + str_day + "," + str_name;
+    const char* source = info.c_str();
+    memcpy(_dst, source, strlen(source)+1);
 }

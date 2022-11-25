@@ -9,7 +9,8 @@ enum Msg_type {
     msg_undefined=0,
     msg_for_Cred=1, 
     msg_for_CS=2, 
-    msg_for_EE=3
+    msg_for_EE=3,
+    msg_for_multiple=10
 };
 
 class Message

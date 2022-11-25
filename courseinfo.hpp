@@ -9,7 +9,9 @@ enum CourseField{
     CODE,
     CREDIT,
     DAY,
-    UNDEFINED
+    UNDEFINED,
+    ALL
+
 };
 
 class CourseInfo
@@ -27,6 +29,7 @@ class CourseInfo
 
         void InitWith(const char* info);
         void ClearField();
+        void CopyFullInfo(char* _dst);
 
 };
 

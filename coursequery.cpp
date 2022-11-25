@@ -1,5 +1,5 @@
-#include "courseQuery.hpp"
-#include <string.h>
+#include "coursequery.hpp"
+#include <string.h> 
 
 
 CourseQuery:: CourseQuery(const char* file) : _filePath(file) 
@@ -19,6 +19,8 @@ CourseQuery:: WhatCategory(const char* _src)
         return DAY;
     else if(strcmp(_src, "CourseName") == 0)
         return NAME;
+    else if(strcmp(_src, "All") == 0)
+        return ALL;
     else 
         return UNDEFINED;
 }

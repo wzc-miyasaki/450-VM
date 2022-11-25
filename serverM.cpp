@@ -107,8 +107,15 @@ MainSev:: ReadTCP(char* buf, size_t sz)
 int 
 MainSev:: WhatDept(const char* s)
 {
+    // invalid department format
     if(strlen(s) < 2)
         return 0;
+
+    // multiple department queries
+    if(strlen(s) > 7)
+        return 10;
+    
+    // single department query
     int type = s[0] + s[1];
     switch(type)
     {
@@ -139,13 +146,44 @@ MainSev:: UpdateUserName(const char* _src)
     }
 }
 
+void
+MainSev:: QueryDept(char* query, Msg_type dept, char* _dst, int _dst_size)
+{
+    _buf.setContent(query);
+    _buf.setType(dept);
+    backends.NotifyAll(_buf);
+
+    sockaddr_storage deptAddr;
+    socklen_t addr_sz = sizeof(deptAddr);
+    memset(_dst, 0, _dst_size);
+    int read_byte = recvfrom(fd_u, _dst, _dst_size-1, 0, 
+                            (struct sockaddr *)&deptAddr, &addr_sz);
+    if(read_byte < 1)
+        perror("failded to receive query result");
+}
+
+void
+MainSev:: ExtractMultipleCode(const char* lists, std::vector<std::string>& _dst)
+{
+    std::string src(lists);
+    std::string tmp = "";
+    src.push_back(' '); 
+    for(char c : src){
+        if(c == ' '){
+            if(!tmp.empty()){
+                _dst.push_back(tmp);
+                tmp.clear();
+            }  
+        }else{
+            tmp.push_back(c);
+        }
+    }
+}
+
 void 
 MainSev:: BuildTCPConnection()
 {
-    InitListen();
     listen(listening, 1);
-    printf("The main server is up and running\n");
-    
     struct sockaddr clientAddr;
     socklen_t addrLen = sizeof(clientAddr);
     memset(&clientAddr, 0, sizeof(addrLen));
@@ -157,9 +195,10 @@ MainSev:: BuildTCPConnection()
     }
 }
 
-void 
+bool
 MainSev:: AuthorizeCredential()
 {
+    bool status = false;
     int read_byte;
     char readBuf[BUFSIZE_DEFAULT] = {0};
     char sendBuf[BUFSIZE_DEFAULT] = {0};
@@ -170,7 +209,10 @@ MainSev:: AuthorizeCredential()
             break;
         
         if(strcmp(readBuf, "Auth_Succeed")==0)
+        {
+            status = true;
             break;
+        }
 
         UpdateUserName(readBuf);
         printf("The main server received the authentication for %s using TCP over port %u.\n", username, TCP_PORT_MAIN);
@@ -194,14 +236,16 @@ MainSev:: AuthorizeCredential()
         }
 
     }
+
+    return status;
 }
 
 void
 MainSev:: CourseInfoQuery()
 {
-    int read_byte;
-    int buf_sz = 100;
+    int buf_sz = 4096;
     char buf[buf_sz];
+    char readBuf[buf_sz];
     char c_code[20];
     char c_type[20];
     while(true)
@@ -216,28 +260,38 @@ MainSev:: CourseInfoQuery()
         printf("The main server received from %s to query course %s about %s using TCP over port %u.\n", 
                 username, c_code, c_type, TCP_PORT_MAIN); 
 
-        Msg_type deptType = (Msg_type) WhatDept(buf);
+        Msg_type deptType = (Msg_type) WhatDept(c_code);
 
-        if(deptType != msg_undefined)
+        if(deptType == msg_for_multiple)
         {
-            _buf.setContent(buf);
-            _buf.setType((Msg_type) WhatDept(buf));
-            backends.NotifyAll(_buf);
 
-            sockaddr_storage deptAddr;
-            socklen_t addr_sz = sizeof(deptAddr);
-            memset(buf, 0, buf_sz);
-            read_byte = recvfrom(fd_u, buf, buf_sz - 1, 0, 
-                                    (struct sockaddr *)&deptAddr, &addr_sz);
-            if(read_byte < 1)
-                perror("failded to receive query result");
+            std::vector<std::string> codeList;
+            ExtractMultipleCode(c_code, codeList);
+            memset(readBuf, 0, sizeof(readBuf));
+            char tmpBuf[buf_sz];
+            std::string summary;
+            for(std::string& code : codeList){
+                Msg_type t = (Msg_type) WhatDept(code.c_str());
+                code += ",All";
+                char q[code.length()+1];
+                strcpy(q, code.c_str());
+                QueryDept(q, t, tmpBuf, sizeof(tmpBuf));
+                summary.append(tmpBuf);
+                summary.push_back('#');
+            }
+            memset(readBuf, 0, sizeof(readBuf));
+            strcpy(readBuf, summary.c_str());
+        }
+        else if(deptType != msg_undefined)
+        {
+            QueryDept(buf, deptType, readBuf, buf_sz);
 
         } else {
-            memset(buf, 0, buf_sz);
+            memset(readBuf, 0, sizeof(readBuf));
         }
 
         printf("The main server sent the query information to the client.\n");
-        send(fd_t, buf, strlen(buf)+1, 0);
+        send(fd_t, readBuf, strlen(readBuf)+1, 0);
     }
 }
 
@@ -245,13 +299,20 @@ MainSev:: CourseInfoQuery()
 int main()
 {
     MainSev sevM_ctrl;
+    bool IsAuthorized;
     sevM_ctrl.InitUDPServer(UDP_PORT_MAIN);
-    sevM_ctrl.BuildTCPConnection();
+    sevM_ctrl.InitListen();
 
-    sevM_ctrl.AuthorizeCredential();
-    sevM_ctrl.CourseInfoQuery();
-
-    // free resources
+    printf("The main server is up and running\n");
+    
+    while(true)
+    {
+        sevM_ctrl.BuildTCPConnection();
+        IsAuthorized = sevM_ctrl.AuthorizeCredential();
+        if(IsAuthorized)
+            sevM_ctrl.CourseInfoQuery();
+    }
+    
     
     return 0;
 }

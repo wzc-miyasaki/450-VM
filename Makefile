@@ -1,8 +1,8 @@
 
-OBJ= client.o serverM.o serverC.o global.o backend.o serverCS.o serverEE.o courseinfo.o courseQuery.o
+OBJ= client.o serverM.o serverC.o global.o backend.o serverCS.o serverEE.o courseinfo.o coursequery.o
 OUT= client serverM serverC serverCS serverEE 
 CXX= g++
-FLAGS= -Wall -std=c++11
+FLAGS= -Wall -std=c++11 -g
 
 all : $(OUT)
 
@@ -12,10 +12,10 @@ serverM : serverM.o global.o backend.o
 serverC : serverC.o global.o
 	$(CXX) $(FLAGS) -o $@ $^
 
-serverCS : serverCS.o global.o courseinfo.o courseQuery.o
+serverCS : serverCS.o global.o courseinfo.o coursequery.o
 	$(CXX) $(FLAGS) -o $@ $^
 
-serverEE : serverEE.o global.o courseinfo.o courseQuery.o
+serverEE : serverEE.o global.o courseinfo.o coursequery.o
 	$(CXX) $(FLAGS) -o $@ $^
 
 client : client.o global.o
