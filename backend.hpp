@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 
+
+class SubBackend;
+class BackendSv;
+
 // Define the Message Type
 enum Msg_type {
     msg_undefined=0,
