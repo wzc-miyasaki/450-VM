@@ -10,6 +10,7 @@
 #include "courseinfo.hpp"
 #include "coursequery.hpp"
 
+// transmit the query result to the main server
 void Response(int _fd, const char* queryResult)
 {
     addrinfo hint, *mainS_addr;
@@ -29,6 +30,7 @@ int main()
     int sockfd;
     int readNum;
 
+    // Create UDP server socket
     sockfd = createUDPServerSocket(UDP_PORT_CS);
     if (sockfd == 0)
     {
@@ -45,8 +47,10 @@ int main()
     char c_type[BUFSIZE_DEFAULT];
     CourseQuery cQuery("cs.txt");
 
+    // process incoming query
     while (true)
     {
+        // Wait for the query from main server
         if ((readNum = recvfrom(sockfd, buf, BUFSIZE_DEFAULT-1, 
                                 0, 
                                 (struct sockaddr *)&clientAddr, &c_addr_sz)) == -1)

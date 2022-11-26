@@ -8,6 +8,7 @@ CourseQuery:: CourseQuery(const char* file) : _filePath(file)
 CourseQuery:: ~CourseQuery()
 {}
 
+// find matched course field based on "_src"
 CourseField
 CourseQuery:: WhatCategory(const char* _src) 
 {
@@ -25,6 +26,8 @@ CourseQuery:: WhatCategory(const char* _src)
         return UNDEFINED;
 }
 
+// providing the course code and information category, it search through the text file ;
+// the result is saved to the buffer "_dst" .
 void
 CourseQuery:: Search(const char *code, const char* category, char *_dst)
 {

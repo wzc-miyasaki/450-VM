@@ -3,6 +3,8 @@
 
 #include "courseinfo.hpp"
 
+// Open the file located at "_filePath" 
+// Perform the query by searching through the text file. 
 class CourseQuery
 {
 

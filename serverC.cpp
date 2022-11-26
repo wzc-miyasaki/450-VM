@@ -9,7 +9,8 @@
 #include "backend.hpp"
 
 
-
+// it takes a char array "info" that holds the information <username,password>;
+// it extracts the "username" to the buffer "_u" and "password" to the buffer "_p"
 void getUserAndPass(const char *info, char *_u, char *_p)
 {
     char *pt = _u;
@@ -34,9 +35,9 @@ void getUserAndPass(const char *info, char *_u, char *_p)
 }
 
 
-// username does not exist, return 0
-// valid username but wrong password, return 1
-// correct username and password, return 2
+// return 0:  username does not exist
+// return 1:  valid username but wrong password
+// return 2:  correct username and password
 int verifyCred(char *info)
 {
     int status = 0;
@@ -109,7 +110,7 @@ int main()
         printf("The ServerC received an authentication request from the Main Server.\n");
         int authStatus = verifyCred(buf);
 
-        // send auth result to server
+        // send authentication result to server
         addrinfo hint, *mainS_addr;
         memset(&hint, 0, sizeof(hint));
         hint.ai_family = AF_INET;

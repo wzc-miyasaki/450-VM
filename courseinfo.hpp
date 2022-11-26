@@ -3,6 +3,7 @@
 
 #include <string>
 
+// define a list of course fields
 enum CourseField{
     PROF,
     NAME,
@@ -14,6 +15,7 @@ enum CourseField{
 
 };
 
+// It maintain all the course field informations for each single course code. 
 class CourseInfo
 {
     public:
@@ -27,9 +29,9 @@ class CourseInfo
         char credit[4];
         char day[20];
 
-        void InitWith(const char* info);
+        void InitWith(const char* info);    // update the attributes above 
         void ClearField();
-        void CopyFullInfo(char* _dst);
+        void CopyFullInfo(char* _dst);      // copy all the course information to the buffer "_dst"
 
 };
 

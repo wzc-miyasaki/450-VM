@@ -10,7 +10,7 @@
 #include "courseinfo.hpp"
 #include "coursequery.hpp"
 
-
+// transmit the query result to the main server
 void Response(int _fd, const char* queryResult)
 {
     addrinfo hint, *mainS_addr;
@@ -31,6 +31,7 @@ int main()
     int sockfd;
     int readNum;
 
+    // Create UDP server socket
     sockfd = createUDPServerSocket(UDP_PORT_EE);
     if (sockfd == 0)
     {
@@ -48,8 +49,10 @@ int main()
     CourseQuery cQuery("ee.txt");
 
 
+    // process incoming query
     while (true)
     {
+        // Wait for the query from main server
         if ((readNum = recvfrom(sockfd, buf, BUFSIZE_DEFAULT-1, 
                                 0, 
                                 (struct sockaddr *)&clientAddr, &c_addr_sz)) == -1)
@@ -63,9 +66,11 @@ int main()
         AnalyzeQuery(buf, c_code, c_type);
         printf("The ServerEE received a request from the Main Server about the %s of %s.\n", c_type, c_code);
 
+        // Search the course Information
         memset(buf, 0, sizeof(buf));
         cQuery.Search(c_code, c_type, buf);
-  
+        
+        // show the query result
         if(strlen(buf) == 0) {
             printf("Didn’t find the course: %s.\n", c_code);
         } else {
@@ -73,6 +78,7 @@ int main()
                 c_type, c_code, buf);
         }
 
+        // send query result to main server
         Response(sockfd, buf);
         printf("The ServerEE finished sending the response to the Main Server.\n\n");
     }

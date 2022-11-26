@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-// Message Type Macros
+// Define the Message Type
 enum Msg_type {
     msg_undefined=0,
     msg_for_Cred=1, 
@@ -12,6 +12,7 @@ enum Msg_type {
     msg_for_EE=3,
     msg_for_multiple=10
 };
+
 
 class Message
 {
@@ -23,6 +24,26 @@ class Message
         void setType(Msg_type _t);
 };
 
+
+/**     Observer Design Pattern
+ */
+
+// Subject Class
+class BackendSv
+{
+public:
+    BackendSv() {}
+    ~BackendSv() { remvAll(); }
+    void addSub(SubBackend* serv);
+    void remvSub(int id);
+    void remvAll();
+    void NotifyAll(Message &msg);
+private:
+    std::vector<SubBackend*> subscribers;
+};
+
+
+// Observer Class
 class SubBackend
 {
     public:
@@ -38,20 +59,9 @@ class SubBackend
         addrinfo *addr;
 };
 
-class BackendSv
-{
-public:
-    BackendSv() {}
-    ~BackendSv() { remvAll(); }
-    void addSub(SubBackend* serv);
-    void remvSub(int id);
-    void remvAll();
-    void NotifyAll(Message &msg);
-private:
-    std::vector<SubBackend*> subscribers;
-};
 
-// define 3 backend servers
+
+// define 3 backend server subclasses 
 class ServerC : public SubBackend
 {
     public:

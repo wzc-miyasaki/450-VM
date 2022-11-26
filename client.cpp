@@ -7,6 +7,7 @@
 #include <vector>
 #include "global.hpp"
 
+// Maximum attempts
 #define ATTEMPT_MAX 3
 
 using namespace std;
@@ -76,6 +77,7 @@ int CourseQuery(char *res)
     return queryStatus;
 }
 
+// get tcp client port number, which is dynamically assigned by operating system
 void GetClientPort(int skfd, int *_dst)
 {
     // get client socket port number
@@ -88,6 +90,7 @@ void GetClientPort(int skfd, int *_dst)
         *_dst = (int) ntohs(clientAddr.sin_port);
 }
 
+// extract username field from the buffer "_dst"
 void extractUsername(const char *_src, char *_dst, size_t dstSz)
 {
     memset(_dst, 0, dstSz);
@@ -105,6 +108,7 @@ void extractUsername(const char *_src, char *_dst, size_t dstSz)
 
 }
 
+// < multiple course queries > scenario:  display all query results
 void DisplayMultRes(std::vector<std::string>& courseList, const char* res, const std::string& symbol)
 {
     printf("CourseCode: Credits, Professor, Days, Course Name\n");
@@ -122,6 +126,7 @@ void DisplayMultRes(std::vector<std::string>& courseList, const char* res, const
     }
 }
 
+// < multiple course queries > scenario:  extract multiple course codes from the "list", and saved them in c++ vector datatype "_dst"
 void ExtractMultipleCode(const char* lists, std::vector<std::string>& _dst)
 {
     std::string src(lists);
@@ -138,6 +143,7 @@ void ExtractMultipleCode(const char* lists, std::vector<std::string>& _dst)
         }
     }
 }
+
 
 int main()
 {
