@@ -1,8 +1,3 @@
-# EE450 :  Network TCP Project
-**Student Name**:  Zecheng Wang
-
-**ID**:  2561150344
-
 
 
 
